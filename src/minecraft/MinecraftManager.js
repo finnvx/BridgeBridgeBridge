@@ -392,6 +392,10 @@ class MinecraftManager extends CommunicationBridge {
       profilesFolder: "./auth-cache",
       plugins: {
         blocks: false,
+        // These two need the blocks/entities plugins: on SkyBlock a block action packet threw
+        // "bot.blockAt is not a function", stalled the packet stream and the bot timed out.
+        block_actions: false,
+        explosion: false,
         physics: false,
         inventory: false,
         simple_inventory: false,

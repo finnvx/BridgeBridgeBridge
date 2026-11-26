@@ -48,7 +48,7 @@ function writeJson(file, value) {
 
     fs.writeFileSync(file, JSON.stringify(value, null, 2));
   } catch (error) {
-    console.warn(`Minecraft > Could not write ${file}:`, error.message || error);
+    console.warn(`Minecraft > Could not write ${file}: ${error.message || error}`);
   }
 }
 
@@ -155,6 +155,10 @@ function openMenu(command) {
     };
 
     const onPacket = (data, meta) => {
+      if (/window|screen|container/.test(meta?.name ?? "")) {
+        console.minecraft(`Dyes > packet ${meta.name} windowId=${data.windowId}`);
+      }
+
       if (meta?.name === "open_window") {
         windowId = data.windowId;
         title = nbtText(data.windowTitle);
@@ -228,7 +232,9 @@ async function fetchDyes(minecraft) {
   let menu = null;
 
   try {
+    console.minecraft("Dyes > going to SkyBlock to read /dyes");
     await joinSkyblock(minecraft);
+    console.minecraft("Dyes > on SkyBlock, opening /dyes");
     await delay(3000);
 
     menu = await openMenu("/dyes");
@@ -293,7 +299,7 @@ async function checkForNewYear(minecraft) {
   try {
     await fetchDyes(minecraft);
   } catch (error) {
-    console.warn(`Minecraft > Could not read /dyes for SkyBlock Year ${year}, retrying in 10 minutes:`, error.message || error);
+    console.warn(`Minecraft > Could not read /dyes for SkyBlock Year ${year}, retrying in 10 minutes: ${error.message || error}`);
   }
 }
 

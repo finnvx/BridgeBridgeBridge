@@ -64,7 +64,7 @@ class DyesCommand extends minecraftCommand {
 
       return this.send(formatDyes(data));
     } catch (error) {
-      console.warn("Minecraft > dyesCommand error:", error);
+      console.warn(`Minecraft > dyesCommand error: ${error?.stack || error}`);
       return this.send(`Couldn't read /dyes: ${error.message || error}`);
     }
   }

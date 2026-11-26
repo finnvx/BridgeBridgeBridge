@@ -128,13 +128,11 @@ function parseDyes(items) {
       continue;
     }
 
-    for (const line of item.lore) {
-      const match = line.match(BOOST_REGEX);
-      if (match) {
-        dyes.push({ name: item.name, multiplier: Number(match[1]) });
-        year = Number(match[2]);
-        break;
-      }
+    // Hypixel wraps the sentence over two lore lines ("...as common during" / "SkyBlock Year 528!").
+    const match = item.lore.join(" ").replace(/\s+/g, " ").match(BOOST_REGEX);
+    if (match) {
+      dyes.push({ name: item.name, multiplier: Number(match[1]) });
+      year = Number(match[2]);
     }
   }
 

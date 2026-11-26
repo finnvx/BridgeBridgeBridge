@@ -436,9 +436,12 @@ class MinecraftManager extends CommunicationBridge {
    */
   limitCommandLength(bot) {
     const LIMIT = 256;
-    const originalChat = bot.chat.bind(bot);
+    // mineflayer's chat plugin sets bot.chat only after this runs, so catch that assignment.
+    let originalChat = (message) => {
+      throw new Error(`bot.chat is not ready yet: ${message}`);
+    };
 
-    bot.chat = (message) => {
+    const limitedChat = (message) => {
       if (typeof message !== "string" || !message.startsWith("/") || message.length <= LIMIT) {
         return originalChat(message);
       }
@@ -459,6 +462,19 @@ class MinecraftManager extends CommunicationBridge {
         }, index * 1000);
       });
     };
+
+    if (typeof bot.chat === "function") {
+      originalChat = bot.chat.bind(bot);
+    }
+
+    Object.defineProperty(bot, "chat", {
+      configurable: true,
+      enumerable: true,
+      get: () => limitedChat,
+      set: (fn) => {
+        originalChat = fn;
+      }
+    });
   }
 
   async onBroadcast({ channel, username, message, replyingTo, discord }) {

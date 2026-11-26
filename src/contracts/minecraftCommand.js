@@ -1,6 +1,9 @@
 const { splitMessage, delay, generateID } = require("./helperFunctions.js");
 const config = require("../../config.json");
 
+// 256 is the chat limit, and "/gc " or "/oc " in front counts too; longer commands make Hypixel drop the connection.
+const MAX_MESSAGE_LENGTH = 256 - "/oc ".length;
+
 class minecraftCommand {
   /** @param {import("minecraft-protocol").Client} minecraft */
   constructor(minecraft) {
@@ -35,8 +38,8 @@ class minecraftCommand {
     const startTime = Date.now();
     const maxExecutionTime = 10000;
 
-    if (message.length > 256) {
-      const messages = splitMessage(message, 256);
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      const messages = splitMessage(message, MAX_MESSAGE_LENGTH);
       for (const msg of messages) {
         await delay(1000);
         await this.send(msg, maxRetries, isErrorMessage);
@@ -106,7 +109,7 @@ class minecraftCommand {
           if (error.message === "duplicate-message") {
             await delay(100);
             const randomId = generateID(config.minecraft.bot.messageRepeatBypassLength);
-            const maxLength = 256 - randomId.length - 3; // -3 for space
+            const maxLength = MAX_MESSAGE_LENGTH - randomId.length - 3; // -3 for " - "
             message = `${message.substring(0, maxLength)} - ${randomId}`;
             continue;
           }

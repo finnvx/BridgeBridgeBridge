@@ -231,9 +231,26 @@ function replaceVariables(template, variables) {
  * @returns {string[]}
  */
 function splitMessage(message, amount) {
+  // Cut at " | " or a space where possible, so words and entries stay whole.
   const messages = [];
-  for (let i = 0; i < message.length; i += amount) {
-    messages.push(message.slice(i, i + amount));
+  let rest = message;
+
+  while (rest.length > amount) {
+    const part = rest.slice(0, amount);
+    let cut = part.lastIndexOf(" | ");
+    if (cut < amount / 2) {
+      cut = part.lastIndexOf(" ");
+    }
+    if (cut < amount / 2) {
+      cut = amount;
+    }
+
+    messages.push(rest.slice(0, cut).trim());
+    rest = rest.slice(cut).replace(/^ *\| */, "").trim();
+  }
+
+  if (rest.length > 0) {
+    messages.push(rest);
   }
 
   return messages;

@@ -1,5 +1,5 @@
 const CommunicationBridge = require("../contracts/CommunicationBridge.js");
-const { replaceVariables } = require("../contracts/helperFunctions.js");
+const { replaceVariables, splitMessage } = require("../contracts/helperFunctions.js");
 const StateHandler = require("./handlers/StateHandler.js");
 const ErrorHandler = require("./handlers/ErrorHandler.js");
 const ChatHandler = require("./handlers/ChatHandler.js");
@@ -49,6 +49,8 @@ class MinecraftManager extends CommunicationBridge {
 
     global.bot = this.createBotConnection();
     this.bot = bot;
+
+    this.limitCommandLength(this.bot);
 
     this.registerDebugEvents(this.bot);
     this.registerSkyblockResourcePackHandler(this.bot);
@@ -425,6 +427,38 @@ class MinecraftManager extends CommunicationBridge {
         game: false
       }
     });
+  }
+
+  /**
+   * Hypixel closes the connection (no kick message, just "socketClosed") when a command is longer than
+   * 256 characters, and mineflayer doesn't split commands. So any long "/gc ...", "/oc ..." etc. is sent
+   * as several messages with the same command in front, one second apart.
+   */
+  limitCommandLength(bot) {
+    const LIMIT = 256;
+    const originalChat = bot.chat.bind(bot);
+
+    bot.chat = (message) => {
+      if (typeof message !== "string" || !message.startsWith("/") || message.length <= LIMIT) {
+        return originalChat(message);
+      }
+
+      const header = message.match(/^\/(?:msg|w|tell|whisper)\s+\S+\s+|^\/\S+\s+/)?.[0] ?? "";
+      const body = message.slice(header.length);
+
+      if (!header || header.length > LIMIT / 2) {
+        console.warn(`Minecraft > Command over ${LIMIT} characters cut off: ${message.slice(0, 60)}...`);
+        return originalChat(message.slice(0, LIMIT));
+      }
+
+      splitMessage(body, LIMIT - header.length).forEach((part, index) => {
+        setTimeout(() => {
+          if (bot._client?.state === "play") {
+            originalChat(header + part);
+          }
+        }, index * 1000);
+      });
+    };
   }
 
   async onBroadcast({ channel, username, message, replyingTo, discord }) {

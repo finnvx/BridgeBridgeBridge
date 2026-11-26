@@ -1,5 +1,5 @@
-const { getLatestProfile } = require("../../../../API/functions/getLatestProfile.js");
-const soopyCommand = require("../contracts/soopyCommand.js");
+const { getLatestProfile } = require("../../../API/functions/getLatestProfile.js");
+const minecraftCommand = require("../../contracts/minecraftCommand.js");
 
 const {
   CLASSES,
@@ -12,7 +12,7 @@ const {
   calculateRunsUntilClassAverage,
 } = require("../utils/dungeonRuns.js");
 
-class RunsTillClassAverageOverflowCommand extends soopyCommand {
+class RunsTillClassAverageOverflowCommand extends minecraftCommand {
   /** @param {import("minecraft-protocol").Client} minecraft */
   constructor(minecraft) {
     super(minecraft);
@@ -20,9 +20,12 @@ class RunsTillClassAverageOverflowCommand extends soopyCommand {
     this.name = "runstillclassaverageoverflow";
     this.aliases = ["rtcao"];
     this.description = "Runs until overflow Class Average.";
+    this.dashPrefix = true;
   }
 
-  async onCommand(player, message, args) {
+  async onCommand(player, message) {
+    const [, ...args] = message.trim().split(/ +/);
+
     try {
       let target = args[0] || player;
       let targetAverage = 50;

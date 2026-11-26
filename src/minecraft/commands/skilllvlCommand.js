@@ -1,7 +1,7 @@
-const { getLatestProfile } = require("../../../../API/functions/getLatestProfile.js");
-const { formatNumber, titleCase } = require("../../../contracts/helperFunctions.js");
-const { getOverflowSkills } = require("../overflowSkills.js");
-const soopyCommand = require("../contracts/soopyCommand.js");
+const { getLatestProfile } = require("../../../API/functions/getLatestProfile.js");
+const { formatNumber, titleCase } = require("../../contracts/helperFunctions.js");
+const { getOverflowSkills } = require("../utils/overflowSkills.js");
+const minecraftCommand = require("../../contracts/minecraftCommand.js");
 
 const SKILL_ALIASES = {
   alchemy: "alchemy",
@@ -50,7 +50,7 @@ function formatXP(value) {
   return number.toLocaleString("en-US");
 }
 
-class SkillLvlCommand extends soopyCommand {
+class SkillLvlCommand extends minecraftCommand {
   /** @param {import("minecraft-protocol").Client} minecraft */
   constructor(minecraft) {
     super(minecraft);
@@ -58,18 +58,19 @@ class SkillLvlCommand extends soopyCommand {
     this.name = "skilllvl";
     this.aliases = ["sl", "skilllevel"];
     this.description = "Overflow skill level of specified user.";
+    this.dashPrefix = true;
   }
 
   /**
    * @param {string} player
    * @param {string} message
-   * @param {string[]} args
-   * @param {string} usedAlias
    */
-  async onCommand(player, message, args, usedAlias) {
+  async onCommand(player, message) {
+    const [, ...args] = message.trim().split(/ +/);
+
     try {
       if (args.length === 0) {
-        return this.send("Usage | -sl <skill> [player]");
+        return this.send("Usage | !sl <skill> [player]");
       }
 
       let target = player;

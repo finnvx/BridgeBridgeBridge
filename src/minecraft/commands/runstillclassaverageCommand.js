@@ -1,5 +1,5 @@
-const { getLatestProfile } = require("../../../../API/functions/getLatestProfile.js");
-const soopyCommand = require("../contracts/soopyCommand.js");
+const { getLatestProfile } = require("../../../API/functions/getLatestProfile.js");
+const minecraftCommand = require("../../contracts/minecraftCommand.js");
 
 const {
   CLASSES,
@@ -76,17 +76,20 @@ function parseRtcaArgs(args, defaultPlayer) {
   return { target, targetAverage, floorInput, playingClass };
 }
 
-class RunsTillClassAverageCommand extends soopyCommand {
+class RunsTillClassAverageCommand extends minecraftCommand {
   /** @param {import("minecraft-protocol").Client} minecraft */
   constructor(minecraft) {
     super(minecraft);
 
     this.name = "runstillclassaverage";
     this.aliases = ["rtca"];
-    this.description = "Runs until Class Average. Usage -rtca [player] [average] [floor] [class].";
+    this.description = "Runs until Class Average. Usage !rtca [player] [average] [floor] [class].";
+    this.dashPrefix = true;
   }
 
-  async onCommand(player, message, args) {
+  async onCommand(player, message) {
+    const [, ...args] = message.trim().split(/ +/);
+
     try {
       const parsed = parseRtcaArgs(args, player);
       const floor = getFloorOrDefault(parsed.floorInput);

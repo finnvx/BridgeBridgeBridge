@@ -1,5 +1,6 @@
 const { delay } = require("../../contracts/helperFunctions.js");
 const minecraftCommand = require("../../contracts/minecraftCommand.js");
+const botActivity = require("../other/botActivity.js");
 
 class warpoutCommand extends minecraftCommand {
   /** @param {import("minecraft-protocol").Client} minecraft */
@@ -9,7 +10,18 @@ class warpoutCommand extends minecraftCommand {
     this.aliases = ["warp"];
     this.description = "Warp player out of the game";
     this.options = [];
-    this.isOnCooldown = false;
+
+    // The cooldown flag doubles as the shared "bot is busy" marker, so !dyes and !warp never move the bot at the same time.
+    Object.defineProperty(this, "isOnCooldown", {
+      get: () => botActivity.busyWith() === "warp",
+      set: (value) => {
+        if (value) {
+          botActivity.tryStart("warp");
+        } else {
+          botActivity.end("warp");
+        }
+      }
+    });
   }
 
   waitForSkyBlockJoin(timeoutMs = 45000) {
@@ -222,6 +234,10 @@ class warpoutCommand extends minecraftCommand {
     try {
       if (this.isOnCooldown) {
         return safeSend(`${player} Command is on cooldown`);
+      }
+
+      if (botActivity.busyWith() !== null) {
+        return safeSend(`${player} I'm busy right now, try again in a minute.`);
       }
 
       this.isOnCooldown = true;

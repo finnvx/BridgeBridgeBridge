@@ -1,5 +1,4 @@
 const { Collection } = require("discord.js");
-const SoopyCommandHandler = require("./soopyCommands/SoopyCommandHandler.js");
 const config = require("../../config.json");
 const axios = require("axios");
 const fs = require("fs");
@@ -11,7 +10,6 @@ class CommandHandler {
 
     this.prefix = config.minecraft.bot.prefix;
     this.commands = new Collection();
-    this.soopyCommands = new SoopyCommandHandler(minecraft);
 
     const commandFiles = fs.readdirSync("./src/minecraft/commands").filter((file) => file.endsWith(".js"));
     for (const file of commandFiles) {
@@ -43,10 +41,15 @@ class CommandHandler {
         return;
       }
 
-      if (config.minecraft.commands.soopyCommands === true) {
-        const handled = this.soopyCommands.handle(player, message, officer);
+      // Our own commands from the old Soopy set also answer to "-" (e.g. -sl), as before.
+      if (config.minecraft.commands.soopyCommands !== false) {
+        const dashName = message.slice(1).trim().split(/ +/)[0].toLowerCase();
+        const dashCommand = this.commands.find((cmd) => cmd.dashPrefix === true && (cmd.name === dashName || cmd.aliases?.includes(dashName)));
 
-        if (handled === true) {
+        if (dashCommand !== undefined) {
+          console.minecraft(`${player} - [${dashCommand.name}] ${message}`);
+          dashCommand.officer = officer;
+          dashCommand.onCommand(player, message, context);
           return;
         }
       }

@@ -81,6 +81,7 @@ class MinecraftManager extends CommunicationBridge {
       require("./other/eventNotifier.js");
       require("./other/skyblockNotifier.js");
       require("./other/alphaPlayerCountTracker.js");
+      require("./other/dyesTracker.js").startDyesTracker(this);
     });
   }
 

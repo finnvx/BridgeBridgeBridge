@@ -1,5 +1,5 @@
-const { getLatestProfile } = require("../../../../API/functions/getLatestProfile.js");
-const soopyCommand = require("../contracts/soopyCommand.js");
+const { getLatestProfile } = require("../../../API/functions/getLatestProfile.js");
+const minecraftCommand = require("../../contracts/minecraftCommand.js");
 
 const {
   FLOORS,
@@ -11,7 +11,7 @@ const {
   calculateRunsUntilCata,
 } = require("../utils/dungeonRuns.js");
 
-class RunsTillCataCommand extends soopyCommand {
+class RunsTillCataCommand extends minecraftCommand {
   /** @param {import("minecraft-protocol").Client} minecraft */
   constructor(minecraft) {
     super(minecraft);
@@ -19,9 +19,12 @@ class RunsTillCataCommand extends soopyCommand {
     this.name = "runstillcata";
     this.aliases = ["rtc"];
     this.description = "Runs until Catacombs level.";
+    this.dashPrefix = true;
   }
 
-  async onCommand(player, message, args) {
+  async onCommand(player, message) {
+    const [, ...args] = message.trim().split(/ +/);
+
     try {
       let target = args[0] || player;
       let targetLevel = 50;

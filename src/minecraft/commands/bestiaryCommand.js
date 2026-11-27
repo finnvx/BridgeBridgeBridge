@@ -1,7 +1,6 @@
 const { getLatestProfile } = require("../../../API/functions/getLatestProfile.js");
 const minecraftCommand = require("../../contracts/minecraftCommand.js");
 const { formatNumber } = require("../../contracts/helperFunctions.js");
-const { getBestiary } = require("../../../API/stats/bestiary.js");
 
 class BestiaryCommand extends minecraftCommand {
   /** @param {import("minecraft-protocol").Client} minecraft */
@@ -31,15 +30,17 @@ class BestiaryCommand extends minecraftCommand {
 
       const { username, profile } = await getLatestProfile(player);
 
-      const bestiary = getBestiary(profile);
-      if (bestiary === null) {
+      if (!profile?.bestiary?.kills) {
         return this.send("This player has not yet joined SkyBlock since the bestiary update.");
       }
 
-      const progress = formatNumber((bestiary.level / bestiary.maxLevel) * 100, 2);
-      this.send(
-        `${username}'s Bestiary: ${bestiary.level} / ${bestiary.maxLevel} (${progress}%) | Unlocked Tiers: ${bestiary.familyTiers} / ${bestiary.maxFamilyTiers} | Unlocked Families: ${bestiary.familiesUnlocked} / ${bestiary.totalFamilies} | Families Maxed: ${bestiary.familiesCompleted}`
-      );
+      // Hypixel has 359 families now, the public lists (NEU 257, SkyCrypt 208) don't, so tiers computed from
+      // them come out too low (454 instead of 513). The milestone Hypixel saves is exact, so that's shown.
+      const milestone = Number(profile.bestiary.milestone?.last_claimed_milestone) || 0;
+      const kills = Object.entries(profile.bestiary.kills).filter(([key, value]) => key !== "last_killed_mob" && typeof value === "number");
+      const totalKills = kills.reduce((sum, [, value]) => sum + value, 0);
+
+      this.send(`${username}'s Bestiary: Milestone ${milestone} | Kills: ${formatNumber(totalKills, 2)} | Mob types killed: ${kills.length}`);
     } catch (error) {
       console.error(error);
       this.send(`[ERROR] ${error}`);

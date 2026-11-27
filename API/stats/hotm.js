@@ -198,7 +198,44 @@ function getForge(profile) {
   return forgeItems;
 }
 
+/**
+ * Heart of the Forest, built like getHotm. Whispers live in foraging_core.whispers.<forest|desert>:
+ * "total" is what the player has now, "<tree>.spent" what each of the 5 tree slots spent.
+ * @param {any} profile
+ */
+function getHotf(profile) {
+  const skillTree = profile?.skill_tree;
+  const xp = skillTree?.experience?.foraging;
+  if (typeof xp !== "number" && !profile?.foraging_core) {
+    return null;
+  }
+
+  const whispers = (type) => {
+    const data = profile?.foraging_core?.whispers?.[type] ?? {};
+    const current = Number(data.total) || 0;
+    const spent = Object.entries(data)
+      .filter(([key]) => /^\d+$/.test(key))
+      .reduce((sum, [, tree]) => sum + (Number(tree?.spent) || 0), 0);
+
+    return { current, spent, total: current + spent };
+  };
+
+  const nodes = skillTree?.nodes?.foraging ?? {};
+
+  return {
+    level: getLevelByXp(typeof xp === "number" ? xp : 0, { type: "hotf" }),
+    whispers: {
+      forest: whispers("forest"),
+      desert: whispers("desert")
+    },
+    centerOfTheForest: Number(nodes.center_of_the_forest) || 0,
+    tokensSpent: Number(skillTree?.tokens_spent?.forest) || 0,
+    ability: formatAbility(skillTree?.selected_ability?.foraging)
+  };
+}
+
 module.exports = {
   getHotm,
+  getHotf,
   getForge
 };

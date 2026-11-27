@@ -15,7 +15,7 @@ async function getGarden(profileID) {
     const data = cache.get(profileID);
 
     if (data.last_save + 300000 > Date.now()) {
-      return data.data;
+      return { garden: data.data };
     }
   }
 

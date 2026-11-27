@@ -12,9 +12,9 @@ function getGarden(garden) {
     }
 
     return {
-      level: getLevelByXp(garden.garden_experience),
+      level: getLevelByXp(garden.garden_experience, { type: "garden" }),
       cropMilesstone: {
-        wheat: getLevelByXp(garden.resources_collected?.WHEAT, { type: "garden" }),
+        wheat: getLevelByXp(garden.resources_collected?.WHEAT, { type: "WHEAT" }),
         carrot: getLevelByXp(garden.resources_collected?.CARROT_ITEM, { type: "CARROT_ITEM" }),
         sugarCane: getLevelByXp(garden.resources_collected?.SUGAR_CANE, { type: "SUGAR_CANE" }),
         potato: getLevelByXp(garden.resources_collected?.POTATO_ITEM, { type: "POTATO_ITEM" }),
@@ -23,7 +23,10 @@ function getGarden(garden) {
         melon: getLevelByXp(garden.resources_collected?.MELON, { type: "MELON" }),
         mushroom: getLevelByXp(garden.resources_collected?.MUSHROOM_COLLECTION, { type: "MUSHROOM_COLLECTION" }),
         cocoaBeans: getLevelByXp(garden.resources_collected?.["INK_SACK:3"], { type: "INK_SACK:3" }),
-        cactus: getLevelByXp(garden.resources_collected?.CACTUS, { type: "CACTUS" })
+        cactus: getLevelByXp(garden.resources_collected?.CACTUS, { type: "CACTUS" }),
+        sunflower: getLevelByXp(garden.resources_collected?.DOUBLE_PLANT, { type: "DOUBLE_PLANT" }),
+        moonflower: getLevelByXp(garden.resources_collected?.MOONFLOWER, { type: "MOONFLOWER" }),
+        wildRose: getLevelByXp(garden.resources_collected?.WILD_ROSE, { type: "WILD_ROSE" })
       }
     };
   } catch (error) {

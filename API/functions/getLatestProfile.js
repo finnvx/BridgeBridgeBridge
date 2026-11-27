@@ -29,7 +29,12 @@ async function getLatestProfile(uuid, options = { museum: false, garden: false }
     const data = cache.get(uuid);
 
     if (data.last_save + 300000 > Date.now()) {
-      return data;
+      // The cached entry may come from a call without museum/garden; add those when they're asked for now.
+      return {
+        ...data,
+        ...(options.museum && data.museum === undefined ? await getMuseum(data.profileData.profile_id, uuid) : {}),
+        ...(options.garden && data.garden === undefined ? await getGarden(data.profileData.profile_id) : {})
+      };
     }
   }
 

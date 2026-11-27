@@ -29,7 +29,7 @@ class GardenCommand extends minecraftCommand {
       const args = this.getArgs(message);
       player = args[0] || player;
 
-      const { username, garden } = await getLatestProfile(player, { garden: true });
+      const { username, profile, garden } = await getLatestProfile(player, { garden: true });
       if (!garden) {
         return this.send(`[ERROR] ${username} does not have a garden.`);
       }
@@ -39,9 +39,26 @@ class GardenCommand extends minecraftCommand {
         return this.send(`[ERROR] ${username} does not have a garden.`);
       }
 
-      this.send(
-        `${username}'s Garden ${gardenData.level.level} | Crop Milestones: Wheat: ${gardenData.cropMilesstone.wheat.level} | Carrot: ${gardenData.cropMilesstone.carrot.level} | Cane: ${gardenData.cropMilesstone.sugarCane.level} | Potato: ${gardenData.cropMilesstone.potato.level} | Wart: ${gardenData.cropMilesstone.netherWart.level} | Pumpkin: ${gardenData.cropMilesstone.pumpkin.level} | Melon: ${gardenData.cropMilesstone.melon.level} | Mushroom: ${gardenData.cropMilesstone.mushroom.level} | Cocoa: ${gardenData.cropMilesstone.cocoaBeans.level} | Cactus: ${gardenData.cropMilesstone.cactus.level}`
-      );
+      const crops = gardenData.cropMilesstone;
+      const milestones = [
+        ["Wheat", crops.wheat],
+        ["Carrot", crops.carrot],
+        ["Potato", crops.potato],
+        ["Pumpkin", crops.pumpkin],
+        ["Melon", crops.melon],
+        ["Cane", crops.sugarCane],
+        ["Cocoa", crops.cocoaBeans],
+        ["Cactus", crops.cactus],
+        ["Mushroom", crops.mushroom],
+        ["Wart", crops.netherWart],
+        ["Sunflower", crops.sunflower],
+        ["Moonflower", crops.moonflower],
+        ["Wild Rose", crops.wildRose]
+      ].map(([name, level]) => `${name} ${level.level}`);
+
+      const copper = Number(profile?.garden_player_data?.copper ?? 0).toLocaleString("en-US");
+
+      this.send(`${username}'s Garden ${gardenData.level.level} | Copper: ${copper} | Crop Milestones: ${milestones.join(", ")}`);
     } catch (error) {
       console.log(error);
       this.send(`[ERROR] ${error}`);

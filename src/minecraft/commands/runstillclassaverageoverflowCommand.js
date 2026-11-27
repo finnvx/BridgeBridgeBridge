@@ -1,5 +1,6 @@
 const { getLatestProfile } = require("../../../API/functions/getLatestProfile.js");
 const minecraftCommand = require("../../contracts/minecraftCommand.js");
+const { xpBoostNote } = require("../other/xpBoost.js");
 
 const {
   CLASSES,
@@ -61,7 +62,7 @@ class RunsTillClassAverageOverflowCommand extends minecraftCommand {
        .filter(Boolean);
 
      return this.send(
-       `It will take ${formatNumber(result.totalRuns)} ${floor.label} runs for ${username} to reach class average ${targetAverage} (${classParts.join(", ")})`
+       `It will take ${formatNumber(result.totalRuns)} ${floor.label} runs for ${username} to reach class average ${targetAverage} (${classParts.join(", ")})${xpBoostNote()}`
      );
     } catch (error) {
       console.error(error);

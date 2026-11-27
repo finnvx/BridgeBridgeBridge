@@ -1,5 +1,6 @@
 const { getLatestProfile } = require("../../../API/functions/getLatestProfile.js");
 const minecraftCommand = require("../../contracts/minecraftCommand.js");
+const { xpBoostNote } = require("../other/xpBoost.js");
 
 const {
   CLASSES,
@@ -122,7 +123,7 @@ class RunsTillClassAverageCommand extends minecraftCommand {
 
       if (playingClass) {
         return this.send(
-          `It will take ${formatNumber(result.totalRuns)} ${floor.label} runs for ${username} to reach class average ${parsed.targetAverage}${classSuffix}`
+          `It will take ${formatNumber(result.totalRuns)} ${floor.label} runs for ${username} to reach class average ${parsed.targetAverage}${classSuffix}${xpBoostNote()}`
         );
       }
 
@@ -133,7 +134,7 @@ class RunsTillClassAverageCommand extends minecraftCommand {
       const breakdown = classParts.length > 0 ? ` (${classParts.join(", ")})` : "";
 
       return this.send(
-        `It will take ${formatNumber(result.totalRuns)} ${floor.label} runs for ${username} to reach class average ${parsed.targetAverage}${breakdown}`
+        `It will take ${formatNumber(result.totalRuns)} ${floor.label} runs for ${username} to reach class average ${parsed.targetAverage}${breakdown}${xpBoostNote()}`
       );
     } catch (error) {
       console.error(error);

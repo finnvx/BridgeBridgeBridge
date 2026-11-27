@@ -1,5 +1,6 @@
 const { getLatestProfile } = require("../../../API/functions/getLatestProfile.js");
 const minecraftCommand = require("../../contracts/minecraftCommand.js");
+const { xpBoostNote } = require("../other/xpBoost.js");
 
 const {
   FLOORS,
@@ -72,7 +73,7 @@ class RunsTillClassLevelCommand extends minecraftCommand {
       }
 
       return this.send(
-        `It will take ${formatNumber(result.runs)} ${floor.label} runs for ${username} to reach ${targetClass.display} level ${targetLevel} (playing class: ${result.playingClass.display})`
+        `It will take ${formatNumber(result.runs)} ${floor.label} runs for ${username} to reach ${targetClass.display} level ${targetLevel} (playing class: ${result.playingClass.display})${xpBoostNote()}`
       );
     } catch (error) {
       console.error(error);

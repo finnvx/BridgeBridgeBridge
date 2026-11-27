@@ -1,5 +1,6 @@
 const zlib = require("zlib");
 const nbt = require("prismarine-nbt");
+const { getXpBoost } = require("../other/xpBoost.js");
 
 const MAX_BUFFS = {
   hecatombClass: 0.04,
@@ -359,7 +360,8 @@ async function readOtherBuffs(memberProfile) {
     catacombsExplorer: getShardBonusFromStacks(catacombsExplorerStacks, MAX_BUFFS.catacombsExplorer, "EPIC"),
     cataExpert,
     mayor: MAX_BUFFS.mayor,
-    temp: MAX_BUFFS.temp,
+    // A boost set with !xpboost (e.g. 30 -> +0.30), added like the other percentage buffs.
+    temp: (getXpBoost()?.percent ?? 0) / 100 || MAX_BUFFS.temp,
     global: MAX_BUFFS.global,
   };
 }

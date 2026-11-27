@@ -6,6 +6,12 @@ const { get } = require("axios");
 const URL = "https://raw.githubusercontent.com/NotEnoughUpdates/NotEnoughUpdates-REPO/master/constants/garden.json";
 const RELOAD_MS = 12 * 60 * 60 * 1000;
 
+// NEU lists these as Rare, the game counts them as Uncommon (checked against the in-game visitor stats).
+const OVERRIDES = {
+  bednom: "UNCOMMON",
+  farm_merchant: "UNCOMMON"
+};
+
 let visitors = null;
 let loadedAt = 0;
 
@@ -18,7 +24,7 @@ async function getVisitorRarities() {
   try {
     const { data } = await get(URL, { timeout: 10000 });
     if (data?.visitors && typeof data.visitors === "object") {
-      visitors = data.visitors;
+      visitors = { ...data.visitors, ...OVERRIDES };
       loadedAt = Date.now();
     }
   } catch (error) {

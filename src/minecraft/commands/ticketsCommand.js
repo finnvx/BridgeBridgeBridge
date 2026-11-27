@@ -41,8 +41,9 @@ class TicketsCommand extends minecraftCommand {
       }
 
       const formatted = TICKETS.map(([key, label]) => `${label}: ${Number(tickets[key] ?? 0).toLocaleString("en-US")}`);
+      const total = TICKETS.reduce((sum, [key]) => sum + Number(tickets[key] ?? 0), 0);
 
-      return this.send(`${username}'s Safari Tickets: ${formatted.join(", ")}`);
+      return this.send(`${username}'s Safari Tickets: ${total.toLocaleString("en-US")} total | ${formatted.join(", ")}`);
     } catch (error) {
       return this.send(`[ERROR] ${error}`);
     }

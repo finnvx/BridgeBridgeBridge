@@ -1,6 +1,5 @@
 const CONSTANTS = require("../constants/mining.js");
 const { getLevelByXp } = require("../constants/skills.js");
-const moment = require("moment");
 
 function getFirstNumber(obj, keys) {
   if (!obj) return null;
@@ -121,6 +120,42 @@ function getHotm(profile) {
  * @param {import("../../types/profiles.js").Member} profile
  * @returns {import("./hotm.types").Forge | null}
  */
+/**
+ * Level of the HotM perk Quick Forge. Hypixel moved the HotM tree from mining_core.nodes.forge_time to
+ * skill_tree.nodes.mining_2.quick_forge; a perk switched off in game doesn't count.
+ * @param {any} profile
+ * @returns {number}
+ */
+function getQuickForgeLevel(profile) {
+  const trees = [profile.skill_tree?.nodes?.mining_2, profile.skill_tree?.nodes?.mining];
+  for (const nodes of trees) {
+    if (nodes?.quick_forge != null) {
+      return nodes.toggle_quick_forge === false ? 0 : Number(nodes.quick_forge) || 0;
+    }
+  }
+
+  const oldLevel = profile.mining_core?.nodes?.forge_time;
+  if (oldLevel != null) {
+    return profile.mining_core?.nodes?.toggle_forge_time === false ? 0 : Number(oldLevel) || 0;
+  }
+
+  return 0;
+}
+
+/** "1d 17h", "5h 12m", "8m" */
+function formatRemaining(ms) {
+  const minutes = Math.max(1, Math.ceil(ms / 60000));
+  const days = Math.floor(minutes / 1440);
+  const hours = Math.floor((minutes % 1440) / 60);
+  const rest = minutes % 60;
+
+  if (days > 0) {
+    return `${days}d ${hours}h`;
+  }
+
+  return hours > 0 ? `${hours}h ${rest}m` : `${rest}m`;
+}
+
 function getForge(profile) {
   const forgeItems = [];
   if (!profile.forge?.forge_processes?.forge_1) {
@@ -142,10 +177,10 @@ function getForge(profile) {
     if (item.id in CONSTANTS.forge.items) {
       // @ts-ignore
       let forgeTime = CONSTANTS.forge.items[item.id].duration;
-      const quickForge = profile.mining_core?.nodes?.forge_time;
-      if (quickForge != null) {
+      const quickForge = getQuickForgeLevel(profile);
+      if (quickForge > 0) {
         // @ts-ignore
-        forgeTime *= CONSTANTS.forge.quickForgeMultiplier[quickForge];
+        forgeTime *= CONSTANTS.forge.quickForgeMultiplier[Math.min(quickForge, 20)];
       }
 
       // @ts-ignore
@@ -154,7 +189,7 @@ function getForge(profile) {
       const timeFinished = item.startTime + forgeTime;
       forgeItem.timeStarted = item.startTime;
       forgeItem.timeFinished = timeFinished;
-      forgeItem.timeFinishedText = timeFinished < Date.now() ? "(FINISHED)" : ` (${moment(timeFinished).fromNow()})`;
+      forgeItem.timeFinishedText = timeFinished < Date.now() ? "(FINISHED)" : `(in ${formatRemaining(timeFinished - Date.now())})`;
     }
 
     forgeItems.push(forgeItem);

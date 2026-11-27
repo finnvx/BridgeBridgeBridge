@@ -8,7 +8,7 @@ class ChocolateCommand extends minecraftCommand {
   constructor(minecraft) {
     super(minecraft);
     this.name = "chocolatefactory";
-    this.aliases = ["cf", "factory", "chocolate"];
+    this.aliases = ["factory", "chocolate", "choc"];
     this.description = "Skyblock Chocolate Factory Stats of specified user.";
     this.options = [
       {

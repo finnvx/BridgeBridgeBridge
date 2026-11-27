@@ -6,8 +6,52 @@ const { EmbedBuilder } = require("discord.js");
 const config = require("../../../config.json");
 
 const MESSAGE_FILE = "./data/dyes-message.json";
+// 3D head icons of every dye (made with tools/renderDyeEmojis.js), uploaded once as the bot's own
+// application emojis named like "dye_fossil" (they don't use the server's emoji slots).
+const EMOJI_DIR = "./assets/dye-emojis";
 const EMBED_COLOR = 0xe0569b;
 const MULTIPLIER_ICON = { 3: "🔥", 2: "✨" };
+
+/** "Fossil Dye" -> "DYE_FOSSIL" (file name) */
+function dyeId(name) {
+  return `DYE_${name.replace(/\s*Dye$/i, "").trim().toUpperCase().replace(/[^A-Z0-9]+/g, "_")}`;
+}
+
+/**
+ * The bot's emoji for each dye ("<:dye_fossil:123>"), uploading the missing ones from EMOJI_DIR.
+ * @returns {Promise<Record<string, string>>} dye name -> emoji text
+ */
+async function dyeEmojis(dyes) {
+  const result = {};
+  const application = global.client?.application;
+  if (!application) {
+    return result;
+  }
+
+  try {
+    const existing = await application.emojis.fetch();
+
+    for (const dye of dyes) {
+      const id = dyeId(dye.name);
+      const emojiName = id.toLowerCase();
+      let emoji = existing.find((entry) => entry.name === emojiName);
+
+      const file = `${EMOJI_DIR}/${id}.png`;
+      if (!emoji && fs.existsSync(file)) {
+        emoji = await application.emojis.create({ attachment: file, name: emojiName });
+        console.discord(`Uploaded emoji ${emojiName}`);
+      }
+
+      if (emoji) {
+        result[dye.name] = `<:${emoji.name}:${emoji.id}>`;
+      }
+    }
+  } catch (error) {
+    console.warn(`Discord > Could not load the dye emojis: ${error.message || error}`);
+  }
+
+  return result;
+}
 
 function loadMessageInfo() {
   try {
@@ -32,8 +76,8 @@ function saveMessageInfo(info) {
  * @param {{ year: number, dyes: { name: string, multiplier: number }[], fetchedAt?: string }} data
  * @param {number} nextYearStart ms
  */
-function buildEmbed(data, nextYearStart) {
-  const lines = data.dyes.map((dye) => `${MULTIPLIER_ICON[dye.multiplier] ?? "•"} ${dye.name} **${dye.multiplier}x**`);
+function buildEmbed(data, nextYearStart, emojis = {}) {
+  const lines = data.dyes.map((dye) => `${emojis[dye.name] ?? MULTIPLIER_ICON[dye.multiplier] ?? "•"} ${dye.name} **${dye.multiplier}x**`);
   const resetUnix = Math.floor(nextYearStart / 1000);
 
   const embed = new EmbedBuilder()
@@ -71,7 +115,7 @@ async function updateDyesEmbed(data, nextYearStart) {
       return false;
     }
 
-    const embed = buildEmbed(data, nextYearStart);
+    const embed = buildEmbed(data, nextYearStart, await dyeEmojis(data.dyes));
     const saved = loadMessageInfo();
 
     if (saved?.channelId === channelId && saved.messageId) {

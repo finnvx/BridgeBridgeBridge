@@ -75,6 +75,7 @@
       "guildChatChannel": "GUILD_CHAT_CHANNEL_ID",
       "officerChannel": "OFFICER_CHANNEL_ID",
       "loggingChannel": "LOGGING_CHANNEL_ID",
+      "calendarChannel": "CALENDAR_CHANNEL_ID",
       "debugMode": true,
       "debugChannel": "DEBUG_CHANNEL_ID",
       "debugChannelMessageMode": "text",

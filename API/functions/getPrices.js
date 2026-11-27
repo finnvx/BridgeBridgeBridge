@@ -180,4 +180,18 @@ async function getLowestBin(id) {
   return typeof price === "number" ? price : null;
 }
 
-module.exports = { findItem, getBazaarPrice, getLowestBin };
+/** Display name for a Skyblock item id ("REAPER_MASK_TRIBAL_ORC" -> its in-game name, or "Reaper Mask Tribal Orc"). */
+async function getItemName(id) {
+  try {
+    const names = namesForId(id, await getItemNames());
+    if (names.length > 0) {
+      return names[0];
+    }
+  } catch {
+    // fall back to the id below
+  }
+
+  return titleCase(id);
+}
+
+module.exports = { findItem, getBazaarPrice, getLowestBin, getItemName };

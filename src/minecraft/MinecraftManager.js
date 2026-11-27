@@ -77,16 +77,15 @@ class MinecraftManager extends CommunicationBridge {
     this.chatHandler.registerEvents(this.bot);
 
     // Started here and not in the "login" handler below: that event doesn't fire with this setup.
-    // The tracker only acts while the bot is in play state and starts once (safe on reconnects).
+    // These only act while the bot is in play state and start once (safe on reconnects).
+    // (eventNotifier is started by the StateHandler.)
     require("./other/dyesTracker.js").startDyesTracker(this);
+    require("./other/skyblockNotifier.js").startSkyblockNotifier();
+    require("./other/alphaPlayerCountTracker.js");
 
     this.bot.on("login", () => {
       console.log("Minecraft > Bot login event fired.");
       console.log("Minecraft bot is ready!");
-
-      require("./other/eventNotifier.js");
-      require("./other/skyblockNotifier.js");
-      require("./other/alphaPlayerCountTracker.js");
     });
   }
 

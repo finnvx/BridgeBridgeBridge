@@ -254,6 +254,7 @@ async function fetchDyes(minecraft) {
     writeJson(DATA_FILE, data);
 
     console.minecraft(`Dyes for SkyBlock Year ${year}: ${dyes.map((dye) => `${dye.name} ${dye.multiplier}x`).join(", ")}`);
+    updateDiscordMessage(data);
 
     return data;
   } finally {
@@ -274,11 +275,22 @@ async function fetchDyes(minecraft) {
   }
 }
 
+/** Edits (or first posts) the dyes message in the Discord calendar channel. */
+function updateDiscordMessage(data) {
+  const { updateDyesEmbed } = require("../../discord/other/dyesEmbed.js");
+  return updateDyesEmbed(data, skyblockYearStart(data.year + 1));
+}
+
 async function checkForNewYear(minecraft) {
   const year = currentSkyblockYear();
   const saved = loadDyes();
 
   if (saved?.year === year) {
+    // Already read this year; make sure the Discord message shows it too (e.g. after a restart or the first time).
+    const { postedYear } = require("../../discord/other/dyesEmbed.js");
+    if (postedYear() !== year) {
+      await updateDiscordMessage(saved);
+    }
     return;
   }
 

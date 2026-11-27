@@ -42,28 +42,23 @@ class VisitorCommand extends minecraftCommand {
       const rarities = await getVisitorRarities();
       const completed = commissions.completed ?? {};
 
-      // Unique visitors served per rarity: served at least once / all visitors of that rarity.
+      // Accepted visitors per rarity (every time a visitor of that rarity was served).
       const perRarity = {};
-      for (const [id, rarity] of Object.entries(rarities)) {
-        perRarity[rarity] ??= { served: 0, total: 0 };
-        perRarity[rarity].total++;
-        if ((Number(completed[id]) || 0) > 0) {
-          perRarity[rarity].served++;
-        }
+      for (const [id, count] of Object.entries(completed)) {
+        const rarity = rarities[id] ?? "UNKNOWN";
+        perRarity[rarity] = (perRarity[rarity] ?? 0) + (Number(count) || 0);
       }
 
       const order = [...RARITY_ORDER, ...Object.keys(perRarity).filter((rarity) => !RARITY_ORDER.includes(rarity))];
       const rarityText = order
-        .filter((rarity) => perRarity[rarity])
-        .map((rarity) => `${titleCase(rarity)} ${perRarity[rarity].served}/${perRarity[rarity].total}`)
+        .filter((rarity) => perRarity[rarity] > 0)
+        .map((rarity) => `${titleCase(rarity)} ${perRarity[rarity].toLocaleString("en-US")}`)
         .join(", ");
 
       const served = Number(commissions.total_completed) || 0;
       const unique = Number(commissions.unique_npcs_served) || 0;
 
-      return this.send(
-        `${username}'s Visitors: ${served.toLocaleString("en-US")} served | ${unique} unique | ${rarityText}`
-      );
+      return this.send(`${username}'s Visitors: ${served.toLocaleString("en-US")} accepted | ${unique} unique | ${rarityText}`);
     } catch (error) {
       return this.send(`[ERROR] ${error}`);
     }

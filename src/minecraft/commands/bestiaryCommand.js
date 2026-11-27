@@ -35,8 +35,10 @@ class BestiaryCommand extends minecraftCommand {
       }
 
       // Hypixel has 359 families now, the public lists (NEU 257, SkyCrypt 208) don't, so tiers computed from
-      // them come out too low (454 instead of 513). The milestone Hypixel saves is exact, so that's shown.
-      const milestone = Number(profile.bestiary.milestone?.last_claimed_milestone) || 0;
+      // them come out too low. Hypixel saves "last_claimed_milestone" one above the milestone the game shows
+      // (API 513 = "Bestiary Milestone 512" with 5,125 tiers in game), so it's shown minus one.
+      const lastClaimed = Number(profile.bestiary.milestone?.last_claimed_milestone) || 0;
+      const milestone = Math.max(0, lastClaimed - 1);
       const kills = Object.entries(profile.bestiary.kills).filter(([key, value]) => key !== "last_killed_mob" && typeof value === "number");
       const totalKills = kills.reduce((sum, [, value]) => sum + value, 0);
 

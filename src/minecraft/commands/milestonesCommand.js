@@ -46,7 +46,7 @@ class MilestonesCommand extends minecraftCommand {
         const reached = tiers.filter((needed) => count >= needed).length;
 
         if (reached === tiers.length) {
-          return `${name}: ${format(count)} ${unit} (Legendary, maxed)`;
+          return `${name}: ${format(count)} ${unit}`;
         }
 
         const status = reached === 0 ? "none yet" : RARITIES[reached - 1];

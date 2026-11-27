@@ -97,15 +97,21 @@ class BingoCommand extends minecraftCommand {
     }
 
     const totalPoints = events.reduce((sum, event) => sum + (Number(event.points) || 0), 0);
+    const eventCount = `${events.length} ${events.length === 1 ? "event" : "events"}`;
+    const summary = `${username}'s Bingo: ${eventCount}, ${totalPoints.toLocaleString("en-US")} points total`;
+    const goalsOf = (event) => (Array.isArray(event.completed_goals) ? event.completed_goals.length : 0);
+
+    // The current bingo (Hypixel lists it among the player's events once they play it).
+    const currentEvent = current ? events.find((event) => Number(event.key) === Number(current.id)) : null;
+    if (currentEvent) {
+      const goalCount = current.goals?.length ? `/${current.goals.length}` : "";
+      return `${summary} | Current (${current.name}): ${Number(currentEvent.points) || 0} points, ${goalsOf(currentEvent)}${goalCount} goals`;
+    }
+
+    // Not playing the current one: show the last bingo they played (older ones only have a number).
     const last = events.reduce((a, b) => (Number(b.key) > Number(a.key) ? b : a));
-    const goals = Array.isArray(last.completed_goals) ? last.completed_goals.length : 0;
-
-    // Only the current bingo has a name in the API; older ones are shown by their number.
-    const isCurrent = current && Number(last.key) === Number(current.id);
-    const lastName = isCurrent ? `${current.name} (#${last.key})` : `#${last.key}`;
-    const goalText = isCurrent && current.goals?.length ? `${goals}/${current.goals.length} goals` : `${goals} goals`;
-
-    return `${username}'s Bingo: ${events.length} events, ${totalPoints.toLocaleString("en-US")} points total | Last: ${lastName} ${Number(last.points) || 0} points, ${goalText}`;
+    const notPlaying = current ? ` | Not playing ${current.name}` : "";
+    return `${summary} | Last: #${last.key} ${Number(last.points) || 0} points, ${goalsOf(last)} goals${notPlaying}`;
   }
 }
 

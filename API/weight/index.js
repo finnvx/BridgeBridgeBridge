@@ -2,6 +2,7 @@
 // - Senither: formulas from tonydawhale/senitherweight (MIT), ported below
 // - Lily: Antonio32A/lilyweight (MIT), its calculation files are in ./lily (see ./lily/LICENSE)
 // - Coleweight (mining): ninjune.dev's public API, which also gives the leaderboard rank
+// - Elite (farming): api.elitebot.dev, data from https://eliteskyblock.com/
 // @ts-ignore
 const { get } = require("axios");
 const { skillNames, skillXPPerLevel } = require("./lily/constants.json");
@@ -186,4 +187,23 @@ async function getColeweight(username) {
   }
 }
 
-module.exports = { getSenitherWeight, getLilyWeight, getColeweight };
+// ---- Elite farming weight ---------------------------------------------------------------------------------
+
+// Elite API terms: identify the project in the User-Agent and credit eliteskyblock.com where the data is shown.
+const ELITE_HEADERS = { "User-Agent": "BridgeBridgeBridge/1.0 (+https://github.com/Conan2402/BridgeBridgeBridge)" };
+
+/** @returns {Promise<{ weight: number, rank: number | null } | null>} */
+async function getEliteWeight(uuid, profileId) {
+  const ids = `${uuid.replace(/-/g, "")}/${profileId.replace(/-/g, "")}`;
+  const options = { headers: ELITE_HEADERS, timeout: 15000 };
+  const [weight, rank] = await Promise.all([
+    get(`https://api.elitebot.dev/weight/${ids}`, options).then(({ data }) => data).catch(() => null),
+    get(`https://api.elitebot.dev/leaderboard/farmingweight/${ids}`, options).then(({ data }) => data).catch(() => null)
+  ]);
+  if (typeof weight?.totalWeight !== "number") {
+    return null;
+  }
+  return { weight: weight.totalWeight, rank: typeof rank?.rank === "number" && rank.rank > 0 ? rank.rank : null };
+}
+
+module.exports = { getSenitherWeight, getLilyWeight, getColeweight, getEliteWeight };

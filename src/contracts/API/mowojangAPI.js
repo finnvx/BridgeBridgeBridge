@@ -1,5 +1,6 @@
 // @ts-ignore
 const { get } = require("axios");
+const { resolvePlayerAlias } = require("../playerAliases.js");
 
 const uuidCache = new Map();
 const usernameCache = new Map();
@@ -159,7 +160,8 @@ function isUUID(value) {
  * @returns {Promise<string>}
  */
 async function getUUID(username) {
-  const cleanUsername = String(username).trim();
+  // Nicknames like "baguette" stand for the real name, also for commands that read their arguments themselves.
+  const cleanUsername = resolvePlayerAlias(String(username).trim());
   const cacheKey = cleanUsername.toLowerCase();
 
   if (!isValidUsername(cleanUsername)) {

@@ -1,3 +1,4 @@
+const { resolvePlayerAlias } = require("./playerAliases.js");
 const { splitMessage, delay, generateID } = require("./helperFunctions.js");
 const config = require("../../config.json");
 
@@ -21,7 +22,8 @@ class minecraftCommand {
 
     args.shift();
 
-    return args;
+    // Nicknames like "noob5" stand for the real player name (src/contracts/playerAliases.js).
+    return args.map(resolvePlayerAlias);
   }
 
   /**

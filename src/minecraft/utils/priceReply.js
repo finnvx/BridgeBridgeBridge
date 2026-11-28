@@ -33,6 +33,12 @@ async function priceReply(query, preferred) {
     return `No item found for "${query.trim()}".`;
   }
 
+  // Pets: one line with every level that has its own price ("PET-X-RARITY" = any level, "-100", "-200").
+  const pet = item.id.match(/^(PET-.+-[A-Z_]+?)(?:-\d+)?$/);
+  if (pet) {
+    return petReply(item, pet[1]);
+  }
+
   const [bazaar, lowestBin] = await Promise.all([getBazaarPrice(item.id), getLowestBin(item.id)]);
 
   const bazaarText = bazaar ? `Insta-Buy ${price(bazaar.instaBuy)} | Insta-Sell ${price(bazaar.instaSell)}` : null;
@@ -45,14 +51,37 @@ async function priceReply(query, preferred) {
     return `${item.name} has no bazaar or auction price right now.`;
   }
 
-  let reply = `${item.name}: ${text}`;
-  if (item.others.length > 0) {
-    const shown = item.others.slice(0, MAX_OTHERS_SHOWN).join(", ");
-    const more = item.others.length > MAX_OTHERS_SHOWN ? ` and ${item.others.length - MAX_OTHERS_SHOWN} more` : "";
-    reply += ` | Also: ${shown}${more}`;
+  return `${item.name}: ${text}${alsoText(item.others)}`;
+}
+
+function alsoText(others) {
+  if (others.length === 0) {
+    return "";
+  }
+  const shown = others.slice(0, MAX_OTHERS_SHOWN).join(", ");
+  const more = others.length > MAX_OTHERS_SHOWN ? ` and ${others.length - MAX_OTHERS_SHOWN} more` : "";
+  return ` | Also: ${shown}${more}`;
+}
+
+const PET_LEVELS = [
+  ["", "Any level"],
+  ["-100", "Lvl 100"],
+  ["-200", "Lvl 200"]
+];
+
+/** "Golden Dragon (Legendary): Lowest BIN Any level 620M | Lvl 100 664M | Lvl 200 848M" */
+async function petReply(item, baseId) {
+  const prices = await Promise.all(PET_LEVELS.map(([suffix]) => getLowestBin(baseId + suffix)));
+  const parts = PET_LEVELS.map(([, label], i) => (prices[i] !== null ? `${label} ${price(prices[i])}` : null)).filter(Boolean);
+
+  const name = item.name.replace(/ Lvl \d+$/, "");
+  if (parts.length === 0) {
+    return `${name} has no auction price right now.`;
   }
 
-  return reply;
+  // Levels are already in the answer, so other matches are listed once per pet and rarity.
+  const others = [...new Set(item.others.map((other) => other.replace(/ Lvl \d+$/, "")))].filter((other) => other !== name);
+  return `${name}: Lowest BIN ${parts.join(" | ")}${alsoText(others)}`;
 }
 
 module.exports = { priceReply };

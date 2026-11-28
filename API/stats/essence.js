@@ -1,5 +1,5 @@
 // Known essences in display order; any other type the API adds later is appended after them.
-const ESSENCE_ORDER = ["DIAMOND", "DRAGON", "SPIDER", "WITHER", "UNDEAD", "GOLD", "ICE", "CRIMSON", "FOREST", "SAFARI"];
+const ESSENCE_ORDER = ["DIAMOND", "DRAGON", "SPIDER", "WITHER", "UNDEAD", "GOLD", "ICE", "CRIMSON", "SAFARI"];
 
 /**
  * Returns the essence of a profile.

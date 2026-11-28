@@ -38,16 +38,28 @@ class MayorCommand extends minecraftCommand {
       );
 
       await delay(1000);
-      if (data.mayor.election.candidates.length > 0) {
-        const currentLeader = data.mayor.election.candidates.sort((a, b) => (b.votes || 0) - (a.votes || 0))[0];
-        if (!currentLeader) {
-          return this.send(`[MAYOR] No current leader.`);
-        }
-
-        const totalVotes = data.mayor.election.candidates.reduce((total, candidate) => total + (candidate.votes || 0), 0);
-        const percentage = ((currentLeader.votes || 0) / totalVotes) * 100;
-        this.send(`[MAYOR] Current Election: ${currentLeader.name} has ${percentage.toFixed(2)}% of the votes.`);
+      // `current` is the running election; `mayor.election` is the one the current mayor already won.
+      const candidates = [...(data.current?.candidates ?? [])].sort((a, b) => (b.votes || 0) - (a.votes || 0));
+      if (candidates.length === 0) {
+        return this.send(`[MAYOR] No election is running right now.`);
       }
+
+      const totalVotes = candidates.reduce((total, candidate) => total + (candidate.votes || 0), 0) || 1;
+      const share = (candidate) => `${(((candidate.votes || 0) / totalVotes) * 100).toFixed(1)}%`;
+      const [mayor, minister, ...rest] = candidates;
+
+      const parts = [`${mayor.name} ${share(mayor)} (${mayor.perks.map((perk) => perk.name).join(", ")})`];
+      if (minister) {
+        const ministerPerk = minister.perks.find((perk) => perk.minister);
+        parts.push(`Minister: ${minister.name} ${share(minister)}${ministerPerk ? ` (${ministerPerk.name})` : ""}`);
+      }
+      if (rest.length > 0) {
+        parts.push(`Others: ${rest.map((candidate) => `${candidate.name} ${share(candidate)}`).join(", ")}`);
+      }
+
+      this.send(
+        `[MAYOR] Year ${data.current.year} Election: ${parts.join(" | ")}`.replaceAll("ez", "e-z").replaceAll("EZ", "E-Z")
+      );
     } catch (error) {
       this.send(`[ERROR] ${error}`);
     }

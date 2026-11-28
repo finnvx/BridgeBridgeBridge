@@ -8,6 +8,7 @@ const CommandHandler = require("./CommandHandler.js");
 const config = require("../../config.json");
 const fs = require("fs");
 const { ErrorEmbed } = require("../contracts/embedHandler.js");
+const { linkMentions } = require("./other/mentions.js");
 
 class DiscordManager extends CommunicationBridge {
   constructor(app) {
@@ -129,6 +130,9 @@ class DiscordManager extends CommunicationBridge {
         if (this.app.discord.webhook === undefined) {
           return;
         }
+
+        // "@ffnn" -> Discord ping of the linked account
+        message = await linkMentions(message);
 
         this.app.discord.webhook.send({
           content: message,
